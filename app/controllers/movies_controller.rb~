@@ -10,6 +10,7 @@ class MoviesController < ApplicationController
     @movies = Movie.all
     @movies = @movies.order('title') if params['sort'] == 
 'title'
+	render movies_path
   end
 
   def new
