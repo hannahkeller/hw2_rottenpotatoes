@@ -7,10 +7,7 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
-    @movies = @movies.order('title') if params['sort'] == 
-'title'
-	render movies_path
+    @movies = Movie.order(params[:sort_param])
   end
 
   def new
