@@ -7,25 +7,33 @@ class MoviesController < ApplicationController
   end
 
   def index
+
+    if params[:sort_param].nil? && params[:ratings].nil? && (!session[:sort_param].nil? || !session[:ratings].nil?)
+      redirect_to movies_path(:sort_param => session[:sort_param], :ratings => session[:ratings])
+    end
+
+    @all_ratings = Movie.all_ratings
     @sort = params[:sort_param]
     @ratings = params[:ratings]
 
     if @ratings.nil?
-      ratings = Movie.ratings
+      @ratings = Hash[@all_ratings.map {|rating| [rating, 1]}]
     else
       ratings = @ratings.keys
     end
 
-    @all_ratings = Movie.ratings.inject(Hash.new) do |all_ratings, rating|
-      all_ratings[rating] = @ratings.nil? ? false : @ratings.has_key?(rating)
-      all_ratings
+    if !@sort.nil? and !@ratings.nil?
+      @movies = Movie.where(:rating => @ratings.keys).find(:all, :order => @sort)
+    elsif !@sort.nil?
+      @movies = Movie.find(:all, :order => @sort)
+    elsif !@ratings.nil?
+      @movies = Movie.where(:rating => @ratings.keys)
+    else
+      @movies = Movie.all
     end
 
-    if !@sort.nil?
-      @movies = Movie.order("#{@sort} ASC").find_all_by_rating(ratings)
-    else
-      @movies = Movie.find_all_by_rating(ratings)
-    end
+    session[:sort_param] = @sort
+    session[:ratings] = @ratings
   end
 
   def new
